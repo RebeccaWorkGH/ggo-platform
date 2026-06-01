@@ -1,21 +1,46 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-const PSTs = [
-  { id: "agri", label: "Agriculture Development", icon: "🌾", query: "Search for the 3 most important recent research reports or articles (last 60 days) on agricultural development, food systems, smallholder farmers, agricultural productivity, crop biotechnology, food security, or blue foods from FAO, CGIAR, World Bank, Gates Foundation, WEF, or leading journals." },
-  { id: "dpi", label: "Digital Public Infrastructure", icon: "📡", query: "Search for the 3 most important recent research reports or articles (last 60 days) on digital public infrastructure, digital identity, payment systems, government digital services, DPI in LMICs, broadband access, or digital transformation from GSMA, World Bank, UNDP, ITU, or leading policy institutes." },
-  { id: "edu", label: "Global Education", icon: "📚", query: "Search for the 3 most important recent research reports or articles (last 60 days) on global education, learning outcomes, girls' education, education technology, teacher training, education data systems, or skills development from UNESCO, World Bank, GPE, UNICEF, or leading education research institutes." },
-  { id: "ifs", label: "Inclusive Financial Systems", icon: "💳", query: "Search for the 3 most important recent research reports or articles (last 60 days) on inclusive financial systems, digital financial inclusion, mobile money, women's financial access, fintech for development, or microfinance from CGAP, World Bank, IMF, GSMA, AFI, or UNCDF." },
-  { id: "nutrition", label: "Nutrition", icon: "🥗", query: "Search for the 3 most important recent research reports or articles (last 60 days) on nutrition, malnutrition, food fortification, complementary feeding, stunting, dietary diversity, or food systems nutrition from WHO, UNICEF, FAO, IFPRI, Gates Foundation, or leading nutrition journals." },
-  { id: "wash", label: "WASH", icon: "💧", query: "Search for the 3 most important recent research reports or articles (last 60 days) on water, sanitation and hygiene (WASH), safely managed water, climate-resilient WASH, WASH financing, menstrual hygiene, or sanitation access from WHO, UNICEF, WaterAid, IRC, or World Bank." },
-  { id: "econ", label: "Economic Development", icon: "📈", query: "Search for the 3 most important recent research reports or articles (last 60 days) on economic development, structural transformation, job creation, informal economy, trade, poverty reduction, or inclusive growth in LMICs from World Bank, IMF, UNCTAD, ILO, or leading development economics institutes." },
-  { id: "women", label: "Women Empowerment", icon: "⚡", query: "Search for the 3 most important recent research reports or articles (last 60 days) on women's economic empowerment, gender equality, women's labor force participation, gender-based violence, women entrepreneurs, or gender norms from UN Women, World Bank, IFC, CGAP, or leading gender research institutes." },
-  { id: "climate", label: "Climate Change", icon: "🌍", query: "Search for the 3 most important recent research reports or articles (last 60 days) on climate change impacts on development, climate finance, adaptation, food-water-climate nexus, climate resilience in LMICs, or anticipatory action from IPCC, WRI, ODI, OECD, or leading climate policy institutes." },
-  { id: "ai", label: "AI & Innovation", icon: "🤖", query: "Search for the 3 most important recent research reports or articles (last 60 days) on AI for development, AI in agriculture or health or education, responsible AI, AI policy in LMICs, generative AI impacts on developing economies, or innovation for global development from OECD, World Bank, GovAI, or leading AI policy institutes." },
-  { id: "hari", label: "Hari's Corner", icon: "📰", query: "Search for the 3 most important recent high-level articles or reports (last 60 days) on global development trends, geopolitics and development, macro-economic risks, technology and society, or major global challenges that GGO leadership at the Gates Foundation should be tracking, from The Economist, FT, Reuters, Our World in Data, MIT Tech Review, or WEF." },
-];
+const getCurrentMonth = () => new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+const getDateRange = () => {
+  const now = new Date();
+  const prior = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  return `${prior.toLocaleDateString("en-US", { month: "long", year: "numeric" })} to ${now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
+};
 
-const makeSystemPrompt = (pstLabel) => `You are the GGO Insights Platform digest writer for the Gates Foundation's ${pstLabel} team. Search the web and synthesize the most important recent research into the GGO digest format.
+const SEARCH_INSTRUCTIONS = (range) => `Search across ALL of the following source types — do not rely on general web search alone:
+1. INSTITUTIONAL REPORTS: Official publication pages of WHO, World Bank (openknowledge.worldbank.org), FAO, UNICEF, UNDP, Gates Foundation, CGAP, GSMA, WEF, IMF, OECD, ILO, UNCTAD, UNESCO, UN Women, WaterAid, CGIAR, IFPRI, WRI, ODI
+2. WORKING PAPERS: SSRN (ssrn.com), RePec (repec.org), World Bank Policy Research Working Papers, IMF Working Papers, NBER (nber.org)
+3. JOURNAL ABSTRACTS: Search Google Scholar, PubMed (for health/nutrition topics), The Lancet, Nature Food, World Development journal, Journal of Development Economics, Global Food Security journal
+4. PRE-PRINTS: medRxiv (for health/nutrition), bioRxiv where relevant
+5. POLICY BRIEFS: ODI, Brookings, CGD (Center for Global Development), 3ie, J-PAL
+Only include sources published between ${range}. Reject anything from 2024 or earlier. Find up to 5 sources — prioritise quality and recency over quantity.`;
+
+const makePSTs = () => {
+  const range = getDateRange();
+  const si = SEARCH_INSTRUCTIONS(range);
+  return [
+    { id: "agri", label: "Agriculture Development", icon: "🌾", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on agricultural development, food systems, smallholder farmers, crop biotechnology, food security, agricultural productivity, or blue foods. ${si}` },
+    { id: "dpi", label: "Digital Public Infrastructure", icon: "📡", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on digital public infrastructure, digital identity, payment systems, DPI in LMICs, broadband access, or digital transformation for development. ${si}` },
+    { id: "edu", label: "Global Education", icon: "📚", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on global education, learning outcomes, girls' education, education technology, teacher training, education data systems, or skills development in LMICs. ${si}` },
+    { id: "ifs", label: "Inclusive Financial Systems", icon: "💳", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on inclusive financial systems, digital financial inclusion, mobile money, women's financial access, fintech for development, remittances, or microfinance. ${si}` },
+    { id: "nutrition", label: "Nutrition", icon: "🥗", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on nutrition, malnutrition, food fortification, complementary feeding, stunting, wasting, dietary diversity, or food systems nutrition. ${si}` },
+    { id: "wash", label: "WASH", icon: "💧", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on water, sanitation and hygiene (WASH), safely managed water, climate-resilient WASH, WASH financing, menstrual hygiene management, or fecal sludge management. ${si}` },
+    { id: "econ", label: "Economic Development", icon: "📈", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on economic development, structural transformation, job creation, informal economy, trade, poverty reduction, or inclusive growth in LMICs. ${si}` },
+    { id: "women", label: "Women Empowerment", icon: "⚡", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on women's economic empowerment, gender equality, women's labor force participation, gender-based violence, women entrepreneurs, or gender norms and financial inclusion. ${si}` },
+    { id: "climate", label: "Climate Change", icon: "🌍", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on climate change impacts on development, climate finance, adaptation, food-water-climate nexus, loss and damage, or climate resilience in LMICs. ${si}` },
+    { id: "ai", label: "AI & Innovation", icon: "🤖", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on AI for development, AI in agriculture or health or education, responsible AI in LMICs, generative AI impacts on developing economies, or digital innovation for global development. ${si}` },
+    { id: "hari", label: "Hari's Corner", icon: "📰", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important high-level articles published between ${range} on global development trends, geopolitics and development, macro-economic risks, technology and society, or major global challenges that GGO leadership at the Gates Foundation should be tracking. Search The Economist, FT, Reuters, Project Syndicate, Our World in Data, MIT Tech Review, WEF, and Foreign Affairs. ${si}` },
+  ];
+};
+
+const makeSystemPrompt = (pstLabel) => `You are the GGO Insights Platform digest writer for the Gates Foundation's ${pstLabel} team. Today's date is ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. Search the web comprehensively and synthesize the most important RECENT research into the GGO digest format.
+
+CRITICAL RULES:
+1. Only include sources published in the last 60 days. Reject anything from 2024 or earlier — no exceptions.
+2. Search across multiple source types: institutional reports, working papers (SSRN, RePec, World Bank, IMF), journal abstracts (Google Scholar, PubMed, The Lancet, World Development), policy briefs (ODI, Brookings, CGD, J-PAL), and pre-prints (medRxiv) where relevant.
+3. Include up to 5 sources per PST area. If fewer than 5 genuinely recent sources exist, include fewer — do not pad with old content.
+4. For journal articles, the abstract and key findings are sufficient — you do not need full text access.
 
 For each article found, write an entry in EXACTLY this format:
 
@@ -180,6 +205,7 @@ export default function GGOPlatform() {
   }, []);
 
   async function runGeneration() {
+    const PSTs = makePSTs();
     setGenerating(true);
     setGenProgress([]);
     const newData = {};
