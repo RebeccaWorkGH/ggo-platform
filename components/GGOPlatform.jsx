@@ -8,39 +8,129 @@ const getDateRange = () => {
   return `${prior.toLocaleDateString("en-US", { month: "long", year: "numeric" })} to ${now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
 };
 
-const SEARCH_INSTRUCTIONS = (range) => `Search across ALL of the following source types — do not rely on general web search alone:
-1. INSTITUTIONAL REPORTS: Official publication pages of WHO, World Bank (openknowledge.worldbank.org), FAO, UNICEF, UNDP, Gates Foundation, CGAP, GSMA, WEF, IMF, OECD, ILO, UNCTAD, UNESCO, UN Women, WaterAid, CGIAR, IFPRI, WRI, ODI
-2. WORKING PAPERS: SSRN (ssrn.com), RePec (repec.org), World Bank Policy Research Working Papers, IMF Working Papers, NBER (nber.org)
-3. JOURNAL ABSTRACTS: Search Google Scholar, PubMed (for health/nutrition topics), The Lancet, Nature Food, World Development journal, Journal of Development Economics, Global Food Security journal
-4. PRE-PRINTS: medRxiv (for health/nutrition), bioRxiv where relevant
-5. POLICY BRIEFS: ODI, Brookings, CGD (Center for Global Development), 3ie, J-PAL
-Only include sources published between ${range}. Reject anything from 2024 or earlier. Find up to 5 sources — prioritise quality and recency over quantity.`;
+const YEAR = new Date().getFullYear();
+const MONTH = new Date().toLocaleDateString("en-US", { month: "long" });
+const TODAY = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const CUTOFF = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
-const makePSTs = () => {
-  const range = getDateRange();
-  const si = SEARCH_INSTRUCTIONS(range);
-  return [
-    { id: "agri", label: "Agriculture Development", icon: "🌾", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on agricultural development, food systems, smallholder farmers, crop biotechnology, food security, agricultural productivity, or blue foods. ${si}` },
-    { id: "dpi", label: "Digital Public Infrastructure", icon: "📡", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on digital public infrastructure, digital identity, payment systems, DPI in LMICs, broadband access, or digital transformation for development. ${si}` },
-    { id: "edu", label: "Global Education", icon: "📚", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on global education, learning outcomes, girls' education, education technology, teacher training, education data systems, or skills development in LMICs. ${si}` },
-    { id: "ifs", label: "Inclusive Financial Systems", icon: "💳", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on inclusive financial systems, digital financial inclusion, mobile money, women's financial access, fintech for development, remittances, or microfinance. ${si}` },
-    { id: "nutrition", label: "Nutrition", icon: "🥗", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on nutrition, malnutrition, food fortification, complementary feeding, stunting, wasting, dietary diversity, or food systems nutrition. ${si}` },
-    { id: "wash", label: "WASH", icon: "💧", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on water, sanitation and hygiene (WASH), safely managed water, climate-resilient WASH, WASH financing, menstrual hygiene management, or fecal sludge management. ${si}` },
-    { id: "econ", label: "Economic Development", icon: "📈", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on economic development, structural transformation, job creation, informal economy, trade, poverty reduction, or inclusive growth in LMICs. ${si}` },
-    { id: "women", label: "Women Empowerment", icon: "⚡", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on women's economic empowerment, gender equality, women's labor force participation, gender-based violence, women entrepreneurs, or gender norms and financial inclusion. ${si}` },
-    { id: "climate", label: "Climate Change", icon: "🌍", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on climate change impacts on development, climate finance, adaptation, food-water-climate nexus, loss and damage, or climate resilience in LMICs. ${si}` },
-    { id: "ai", label: "AI & Innovation", icon: "🤖", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important sources published between ${range} on AI for development, AI in agriculture or health or education, responsible AI in LMICs, generative AI impacts on developing economies, or digital innovation for global development. ${si}` },
-    { id: "hari", label: "Hari's Corner", icon: "📰", query: `Today is ${new Date().toLocaleDateString("en-US")}. Find up to 5 of the most important high-level articles published between ${range} on global development trends, geopolitics and development, macro-economic risks, technology and society, or major global challenges that GGO leadership at the Gates Foundation should be tracking. Search The Economist, FT, Reuters, Project Syndicate, Our World in Data, MIT Tech Review, WEF, and Foreign Affairs. ${si}` },
-  ];
-};
+// For each PST, we search the LISTING/NEWS pages of authoritative orgs directly
+// This guarantees we get newest publications, not old popular ones
+const makePSTs = () => [
+  {
+    id: "agri", label: "Agriculture Development", icon: "🌾",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.worldbank.org/en/topic/agriculture/publication (sort by newest)
+- https://www.fao.org/publications/en/ (newest first)
+- https://www.cgiar.org/news-events/news/ (latest news)
+- https://www.gatesfoundation.org/ideas/articles (filter: agriculture)
+- Search query: "agriculture development smallholder food security" site:worldbank.org OR site:fao.org OR site:cgiar.org published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "dpi", label: "Digital Public Infrastructure", icon: "📡",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.gsma.com/solutions-and-impact/connectivity-for-good/mobile-for-development/reports/ (newest first)
+- https://openknowledge.worldbank.org/discover?query=digital+infrastructure&sort=score%20desc (newest)
+- https://www.undp.org/publications (filter digital)
+- Search query: "digital public infrastructure DPI fintech mobile money" site:gsma.com OR site:worldbank.org OR site:itu.int published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "edu", label: "Global Education", icon: "📚",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.unicef.org/reports (newest first, filter education)
+- https://www.globalpartnership.org/content/reports-publications (newest)
+- https://unesdoc.unesco.org/search/N-EXPLORE (filter by date ${YEAR})
+- Search query: "global education learning outcomes girls education skills" site:unicef.org OR site:worldbank.org OR site:unesco.org published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "ifs", label: "Inclusive Financial Systems", icon: "💳",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.cgap.org/research/publications (newest first)
+- https://www.gsma.com/solutions-and-impact/connectivity-for-good/mobile-for-development/reports/
+- https://www.imf.org/en/Publications/Search#sort=relevancy&f:dateFacet=[${YEAR}] (newest)
+- https://www.uncdf.org/digital-finance-publications
+- Search query: "financial inclusion mobile money digital finance microfinance women" site:cgap.org OR site:worldbank.org OR site:gsma.com published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "nutrition", label: "Nutrition", icon: "🥗",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.unicef.org/reports (filter nutrition)
+- https://www.who.int/publications/m/item (filter nutrition ${YEAR})
+- https://www.fao.org/publications/en/ (filter nutrition)
+- https://pubmed.ncbi.nlm.nih.gov/?term=nutrition+malnutrition+LMICs&filter=dates.${YEAR}%2F01%2F01-${YEAR}%2F12%2F31&sort=date (newest)
+- Search query: "nutrition malnutrition stunting food fortification complementary feeding" site:who.int OR site:unicef.org OR site:fao.org published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "wash", label: "WASH", icon: "💧",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://washmatters.wateraid.org/ (newest first)
+- https://www.unicef.org/reports (filter WASH water sanitation)
+- https://www.who.int/publications/m/item (filter water sanitation)
+- https://www.ircwash.org/resources (newest)
+- Search query: "WASH water sanitation hygiene safely managed menstrual hygiene climate resilient" site:wateraid.org OR site:unicef.org OR site:who.int published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "econ", label: "Economic Development", icon: "📈",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.worldbank.org/en/research/publications (newest first)
+- https://www.imf.org/en/Publications/WEO (latest World Economic Outlook)
+- https://unctad.org/publications (newest)
+- https://www.ilo.org/global/publications/lang--en/index.htm (newest)
+- Search query: "economic development poverty reduction structural transformation jobs LMICs" site:worldbank.org OR site:imf.org OR site:unctad.org published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "women", label: "Women Empowerment", icon: "⚡",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.unwomen.org/en/digital-library/publications (newest first)
+- https://www.cgap.org/research/publications (filter gender)
+- https://www.worldbank.org/en/topic/gender/publication (newest)
+- https://ifc.org/en/insights/publications (filter gender)
+- Search query: "women empowerment gender equality financial inclusion labor force" site:unwomen.org OR site:worldbank.org OR site:cgap.org published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "climate", label: "Climate Change", icon: "🌍",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.wri.org/research (filter climate newest)
+- https://odi.org/en/publications/ (filter climate newest)
+- https://www.oecd.org/environment/climate-change/ (newest publications)
+- https://www.worldbank.org/en/topic/climatechange/publication (newest)
+- Search query: "climate change adaptation finance food water nexus resilience LMICs" site:wri.org OR site:odi.org OR site:worldbank.org published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "ai", label: "AI & Innovation", icon: "🤖",
+    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
+- https://www.oecd.org/digital/artificial-intelligence/ (newest publications)
+- https://www.worldbank.org/en/topic/digitaldevelopment/publication (newest)
+- https://www.brookings.edu/topic/artificial-intelligence/ (newest)
+- https://www.cgdev.org/topics/technology (newest)
+- Search query: "AI artificial intelligence development LMICs agriculture health education" site:oecd.org OR site:worldbank.org OR site:brookings.edu published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+  {
+    id: "hari", label: "Hari's Corner", icon: "📰",
+    query: `Today is ${TODAY}. Search for up to 5 high-signal articles published after ${CUTOFF} that GGO leadership at the Gates Foundation should be tracking. Search:
+- https://www.economist.com/international/ (newest)
+- https://www.ft.com/global-economy (newest)
+- https://ourworldindata.org/latest (newest)
+- https://www.weforum.org/agenda/latest/ (newest)
+- Search query: "global development geopolitics poverty AI technology society" site:economist.com OR site:ft.com OR site:project-syndicate.org published after:${CUTOFF}
+Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+  },
+];
 
-const makeSystemPrompt = (pstLabel) => `You are the GGO Insights Platform digest writer for the Gates Foundation's ${pstLabel} team. Today's date is ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. Search the web comprehensively and synthesize the most important RECENT research into the GGO digest format.
+const makeSystemPrompt = (pstLabel) => `You are the GGO Insights Platform digest writer for the Gates Foundation's ${pstLabel} team. Today is ${TODAY}.
 
-CRITICAL RULES:
-1. Only include sources published in the last 60 days. Reject anything from 2024 or earlier — no exceptions.
-2. Search across multiple source types: institutional reports, working papers (SSRN, RePec, World Bank, IMF), journal abstracts (Google Scholar, PubMed, The Lancet, World Development), policy briefs (ODI, Brookings, CGD, J-PAL), and pre-prints (medRxiv) where relevant.
-3. Include up to 5 sources per PST area. If fewer than 5 genuinely recent sources exist, include fewer — do not pad with old content.
-4. For journal articles, the abstract and key findings are sufficient — you do not need full text access.
+YOUR MOST IMPORTANT RULE: Every source you include MUST have a verified publication date in ${YEAR} (after ${CUTOFF}). Before writing up any article, confirm its publication date. If you cannot confirm it was published in ${YEAR}, DO NOT include it. It is better to include 1-2 verified recent articles than 5 articles of unknown or old dates.
+
+Search the specific URLs and queries provided. For each source found, check the publication date first — if it says ${YEAR - 1} or earlier anywhere on the page, skip it entirely and search for something newer.
 
 For each article found, write an entry in EXACTLY this format:
 
@@ -90,7 +180,7 @@ async function callWithSearch(systemPrompt, userQuery) {
   let iters = 0;
   while (iters < 12) {
     iters++;
-    const data = await callClaude({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: systemPrompt, tools: [{ type: "web_search_20250305", name: "web_search" }], messages });
+    const data = await callClaude({ model: "claude-sonnet-4-20250514", max_tokens: 4000, system: systemPrompt, tools: [{ type: "web_search_20250305", name: "web_search" }], messages });
     if (data.error) throw new Error(data.error.message);
     for (const b of data.content || []) { if (b.type === "text") fullText += b.text; }
     if (data.stop_reason === "end_turn") break;
