@@ -18,111 +18,35 @@ const CUTOFF = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toLocaleDateStrin
 const makePSTs = () => [
   {
     id: "agri", label: "Agriculture Development", icon: "🌾",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.worldbank.org/en/topic/agriculture/publication (sort by newest)
-- https://www.fao.org/publications/en/ (newest first)
-- https://www.cgiar.org/news-events/news/ (latest news)
-- https://www.gatesfoundation.org/ideas/articles (filter: agriculture)
-- Search query: "agriculture development smallholder food security" site:worldbank.org OR site:fao.org OR site:cgiar.org published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    query: `Today is ${TODAY}. Find up to 5 research reports or articles published after ${CUTOFF} on agricultural development, food systems, smallholder farmers, food security, or crop biotechnology. Search site:worldbank.org OR site:fao.org OR site:cgiar.org OR site:gatesfoundation.org with date filter ${YEAR}. Also check https://www.fao.org/publications/en/ and https://www.cgiar.org/news-events/news/ for newest items. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
   {
     id: "dpi", label: "Digital Public Infrastructure", icon: "📡",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.gsma.com/solutions-and-impact/connectivity-for-good/mobile-for-development/reports/ (newest first)
-- https://openknowledge.worldbank.org/discover?query=digital+infrastructure&sort=score%20desc (newest)
-- https://www.undp.org/publications (filter digital)
-- Search query: "digital public infrastructure DPI fintech mobile money" site:gsma.com OR site:worldbank.org OR site:itu.int published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    query: `Today is ${TODAY}. Find up to 5 research reports or articles published after ${CUTOFF} on digital public infrastructure, DPI, mobile money, digital identity, or digital transformation in LMICs. Search site:gsma.com OR site:worldbank.org OR site:itu.int with date filter ${YEAR}. Also check https://www.gsma.com/solutions-and-impact/connectivity-for-good/mobile-for-development/reports/ for newest items. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
   {
     id: "edu", label: "Global Education", icon: "📚",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.unicef.org/reports (newest first, filter education)
-- https://www.globalpartnership.org/content/reports-publications (newest)
-- https://unesdoc.unesco.org/search/N-EXPLORE (filter by date ${YEAR})
-- Search query: "global education learning outcomes girls education skills" site:unicef.org OR site:worldbank.org OR site:unesco.org published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    query: `Today is ${TODAY}. Find up to 5 research reports or articles published after ${CUTOFF} on global education, learning outcomes, girls' education, education technology, or skills development in LMICs. Search site:unicef.org OR site:worldbank.org OR site:unesco.org OR site:globalpartnership.org with date filter ${YEAR}. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
   {
     id: "ifs", label: "Inclusive Financial Systems", icon: "💳",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.cgap.org/research/publications (newest first)
-- https://www.gsma.com/solutions-and-impact/connectivity-for-good/mobile-for-development/reports/
-- https://www.imf.org/en/Publications/Search#sort=relevancy&f:dateFacet=[${YEAR}] (newest)
-- https://www.uncdf.org/digital-finance-publications
-- Search query: "financial inclusion mobile money digital finance microfinance women" site:cgap.org OR site:worldbank.org OR site:gsma.com published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    query: `Today is ${TODAY}. Find up to 5 research reports or articles published after ${CUTOFF} on financial inclusion, mobile money, women's financial access, fintech for development, or microfinance. Search site:cgap.org OR site:gsma.com OR site:worldbank.org OR site:imf.org with date filter ${YEAR}. Also check https://www.cgap.org/research/publications for newest items. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
   {
     id: "nutrition", label: "Nutrition", icon: "🥗",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.unicef.org/reports (filter nutrition)
-- https://www.who.int/publications/m/item (filter nutrition ${YEAR})
-- https://www.fao.org/publications/en/ (filter nutrition)
-- https://pubmed.ncbi.nlm.nih.gov/?term=nutrition+malnutrition+LMICs&filter=dates.${YEAR}%2F01%2F01-${YEAR}%2F12%2F31&sort=date (newest)
-- Search query: "nutrition malnutrition stunting food fortification complementary feeding" site:who.int OR site:unicef.org OR site:fao.org published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    query: `Today is ${TODAY}. Find up to 5 research reports or articles published after ${CUTOFF} on nutrition, malnutrition, food fortification, stunting, or dietary diversity in LMICs. Search site:who.int OR site:unicef.org OR site:fao.org OR site:ifpri.org with date filter ${YEAR}. Also search PubMed for nutrition LMIC ${YEAR}. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
   {
-    id: "wash", label: "WASH", icon: "💧",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://washmatters.wateraid.org/ (newest first)
-- https://www.unicef.org/reports (filter WASH water sanitation)
-- https://www.who.int/publications/m/item (filter water sanitation)
-- https://www.ircwash.org/resources (newest)
-- Search query: "WASH water sanitation hygiene safely managed menstrual hygiene climate resilient" site:wateraid.org OR site:unicef.org OR site:who.int published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
-  },
-  {
-    id: "econ", label: "Economic Development", icon: "📈",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.worldbank.org/en/research/publications (newest first)
-- https://www.imf.org/en/Publications/WEO (latest World Economic Outlook)
-- https://unctad.org/publications (newest)
-- https://www.ilo.org/global/publications/lang--en/index.htm (newest)
-- Search query: "economic development poverty reduction structural transformation jobs LMICs" site:worldbank.org OR site:imf.org OR site:unctad.org published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
-  },
-  {
-    id: "women", label: "Women Empowerment", icon: "⚡",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.unwomen.org/en/digital-library/publications (newest first)
-- https://www.cgap.org/research/publications (filter gender)
-- https://www.worldbank.org/en/topic/gender/publication (newest)
-- https://ifc.org/en/insights/publications (filter gender)
-- Search query: "women empowerment gender equality financial inclusion labor force" site:unwomen.org OR site:worldbank.org OR site:cgap.org published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
-  },
-  {
-    id: "climate", label: "Climate Change", icon: "🌍",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.wri.org/research (filter climate newest)
-- https://odi.org/en/publications/ (filter climate newest)
-- https://www.oecd.org/environment/climate-change/ (newest publications)
-- https://www.worldbank.org/en/topic/climatechange/publication (newest)
-- Search query: "climate change adaptation finance food water nexus resilience LMICs" site:wri.org OR site:odi.org OR site:worldbank.org published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    id: "wash", label: "WSH", icon: "💧",
+    query: `Today is ${TODAY}. Find up to 5 research reports or articles published after ${CUTOFF} on water, sanitation and hygiene (WASH), safely managed water, WASH financing, or menstrual hygiene in LMICs. Search site:wateraid.org OR site:unicef.org OR site:who.int OR site:worldbank.org with date filter ${YEAR}. Also check https://washmatters.wateraid.org/ for newest items. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
   {
     id: "ai", label: "AI & Innovation", icon: "🤖",
-    query: `Today is ${TODAY}. Search these specific publication listing pages and find up to 5 articles or reports published after ${CUTOFF}:
-- https://www.oecd.org/digital/artificial-intelligence/ (newest publications)
-- https://www.worldbank.org/en/topic/digitaldevelopment/publication (newest)
-- https://www.brookings.edu/topic/artificial-intelligence/ (newest)
-- https://www.cgdev.org/topics/technology (newest)
-- Search query: "AI artificial intelligence development LMICs agriculture health education" site:oecd.org OR site:worldbank.org OR site:brookings.edu published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    query: `Today is ${TODAY}. Find up to 5 research reports or articles published after ${CUTOFF} on AI for development, AI in agriculture or health or education in LMICs, or responsible AI for global development. Search site:oecd.org OR site:worldbank.org OR site:brookings.edu OR site:cgdev.org with date filter ${YEAR}. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
   {
     id: "hari", label: "Hari's Corner", icon: "📰",
-    query: `Today is ${TODAY}. Search for up to 5 high-signal articles published after ${CUTOFF} that GGO leadership at the Gates Foundation should be tracking. Search:
-- https://www.economist.com/international/ (newest)
-- https://www.ft.com/global-economy (newest)
-- https://ourworldindata.org/latest (newest)
-- https://www.weforum.org/agenda/latest/ (newest)
-- Search query: "global development geopolitics poverty AI technology society" site:economist.com OR site:ft.com OR site:project-syndicate.org published after:${CUTOFF}
-Report only sources with a clear publication date in ${YEAR}. Skip anything undated or from ${YEAR - 1} or earlier.`,
+    query: `Today is ${TODAY}. Find up to 5 high-signal articles published after ${CUTOFF} on global development, geopolitics, macro-economic risks, or technology and society that GGO leadership at the Gates Foundation should be tracking. Search site:economist.com OR site:ft.com OR site:project-syndicate.org OR site:weforum.org OR site:ourworldindata.org with date filter ${YEAR}. Only include sources clearly dated in ${YEAR} — skip anything from ${YEAR - 1} or earlier.`,
   },
 ];
 
@@ -172,10 +96,7 @@ const PSTs = [
   { id: "edu",       label: "Global Education",              icon: "📚" },
   { id: "ifs",       label: "Inclusive Financial Systems",   icon: "💳" },
   { id: "nutrition", label: "Nutrition",                     icon: "🥗" },
-  { id: "wash",      label: "WASH",                          icon: "💧" },
-  { id: "econ",      label: "Economic Development",          icon: "📈" },
-  { id: "women",     label: "Women Empowerment",             icon: "⚡" },
-  { id: "climate",   label: "Climate Change",                icon: "🌍" },
+  { id: "wash",      label: "WSH",                          icon: "💧" },
   { id: "ai",        label: "AI & Innovation",               icon: "🤖" },
   { id: "hari",      label: "Hari's Corner",                 icon: "📰" },
 ];
@@ -186,7 +107,12 @@ async function callClaude(payload) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  return res.json();
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`API returned non-JSON response: ${text.slice(0, 120)}`);
+  }
 }
 
 async function callWithSearch(systemPrompt, userQuery) {
