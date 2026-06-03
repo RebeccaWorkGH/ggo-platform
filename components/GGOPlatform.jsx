@@ -101,17 +101,26 @@ const PSTs = [
   { id: "hari",      label: "Hari's Corner",                 icon: "📰" },
 ];
 
+// Call Anthropic directly from the browser — no Vercel function, no timeout limit
 async function callClaude(payload) {
-  const res = await fetch("/api/claude", {
+  const key = localStorage.getItem("ggo_anthropic_key");
+  if (!key) throw new Error("NO_KEY");
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+      "anthropic-beta": "web-search-2025-03-05",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
     body: JSON.stringify(payload),
   });
   const text = await res.text();
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`API returned non-JSON response: ${text.slice(0, 120)}`);
+    throw new Error(`API error: ${text.slice(0, 120)}`);
   }
 }
 
@@ -217,7 +226,10 @@ export default function GGOPlatform() {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [generationDone, setGenerationDone] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [showKeyModal, setShowKeyModal] = useState(false);
   const progressRef = useRef(null);
+
   const chatBottomRef = useRef(null);
 
   useEffect(() => { progressRef.current?.scrollIntoView({ behavior: "smooth" }); }, [genProgress]);
@@ -232,10 +244,22 @@ export default function GGOPlatform() {
         setDigestText(parsed.text || "");
         setGenerationDone(true);
       }
+      // Check for stored API key
+      const storedKey = localStorage.getItem("ggo_anthropic_key");
+      if (storedKey) setApiKey(storedKey);
+      else setShowKeyModal(true);
     } catch {}
   }, []);
 
+  function saveKey(k) {
+    const trimmed = k.trim();
+    localStorage.setItem("ggo_anthropic_key", trimmed);
+    setApiKey(trimmed);
+    setShowKeyModal(false);
+  }
+
   async function runGeneration() {
+    if (!localStorage.getItem("ggo_anthropic_key")) { setShowKeyModal(true); return; }
     const PSTs = makePSTs();
     setGenerating(true);
     setGenProgress([]);
@@ -369,6 +393,29 @@ body{font-family:'DM Sans',sans-serif;color:#1a0e00;background:#faf8f4;font-size
         .nav-btn:hover{opacity:0.8}
       `}</style>
 
+      {/* ── API KEY MODAL ── */}
+      {showKeyModal && (
+        <div style={S.modalOverlay}>
+          <div style={S.modal}>
+            <div style={S.modalLogo}>GGO</div>
+            <h2 style={S.modalTitle}>Enter your Anthropic API Key</h2>
+            <p style={S.modalDesc}>Your key is stored only in your browser and never sent anywhere except directly to Anthropic. Get a key at <a href="https://console.anthropic.com" target="_blank" style={{ color: C.accent }}>console.anthropic.com</a>.</p>
+            <input
+              style={S.modalInput}
+              type="password"
+              placeholder="sk-ant-..."
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && apiKey.trim() && saveKey(apiKey)}
+            />
+            <button style={{ ...S.heroBtnPrimary, width: "100%", padding: "12px", marginTop: "8px" }}
+              onClick={() => saveKey(apiKey)} disabled={!apiKey.trim()}>
+              Save & Continue
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={S.nav}>
         <div style={S.navLogo} onClick={() => setMode("home")}><span style={S.navLogoMark}>GGO</span><span style={S.navLogoSub}>Insights Platform</span></div>
         <div style={S.navCenter}>
@@ -377,8 +424,9 @@ body{font-family:'DM Sans',sans-serif;color:#1a0e00;background:#faf8f4;font-size
           ))}
         </div>
         <div style={S.navRight}>
-          {generationDone && <span style={S.navBadge}>{totalDone}/11 PSTs</span>}
+          {generationDone && <span style={S.navBadge}>{totalDone}/8 PSTs</span>}
           {generationDone && <button className="nav-btn" style={{ ...S.navBtn, marginLeft: "8px", color: C.accent, border: `1px solid ${C.accent}44`, borderRadius: "6px" }} onClick={exportToPDF}>⬇ Export PDF</button>}
+          <button className="nav-btn" style={{ ...S.navBtn, color: C.muted, fontSize: "11px" }} onClick={() => setShowKeyModal(true)}>🔑 API Key</button>
         </div>
       </div>
 
@@ -569,6 +617,12 @@ const S = {
   msgInput: { flex: 1, background: C.panel, border: `1px solid ${C.border}`, borderRadius: "8px", padding: "10px 14px", color: C.text, fontSize: "13.5px", outline: "none" },
   sendBtn: { background: C.accent, color: "#1a0e00", border: "none", borderRadius: "8px", padding: "10px 20px", fontSize: "13px", fontWeight: 500, cursor: "pointer" },
   sendDisabled: { background: C.border, color: C.muted, cursor: "not-allowed" },
+  modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 },
+  modal: { background: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px", padding: "2rem", width: "100%", maxWidth: "420px", margin: "1rem" },
+  modalLogo: { fontFamily: "'Lora',serif", fontSize: "20px", fontWeight: 600, color: C.accent, marginBottom: "1rem" },
+  modalTitle: { fontFamily: "'Lora',serif", fontSize: "18px", color: C.text, margin: "0 0 0.75rem", fontWeight: 500 },
+  modalDesc: { fontSize: "12.5px", color: C.muted, lineHeight: 1.65, margin: "0 0 1.25rem" },
+  modalInput: { width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: "8px", padding: "10px 14px", color: C.text, fontSize: "13px", outline: "none", boxSizing: "border-box" },
 };
 
 const A = {
