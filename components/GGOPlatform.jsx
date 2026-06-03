@@ -165,6 +165,21 @@ SYNTHESIS_RECS:
 
 Use real sources found via web search. Cite real data. Do not fabricate.`;
 
+// Static PSTs list for UI rendering (sidebars, home grid, etc.)
+const PSTs = [
+  { id: "agri",      label: "Agriculture Development",       icon: "🌾" },
+  { id: "dpi",       label: "Digital Public Infrastructure", icon: "📡" },
+  { id: "edu",       label: "Global Education",              icon: "📚" },
+  { id: "ifs",       label: "Inclusive Financial Systems",   icon: "💳" },
+  { id: "nutrition", label: "Nutrition",                     icon: "🥗" },
+  { id: "wash",      label: "WASH",                          icon: "💧" },
+  { id: "econ",      label: "Economic Development",          icon: "📈" },
+  { id: "women",     label: "Women Empowerment",             icon: "⚡" },
+  { id: "climate",   label: "Climate Change",                icon: "🌍" },
+  { id: "ai",        label: "AI & Innovation",               icon: "🤖" },
+  { id: "hari",      label: "Hari's Corner",                 icon: "📰" },
+];
+
 async function callClaude(payload) {
   const res = await fetch("/api/claude", {
     method: "POST",
